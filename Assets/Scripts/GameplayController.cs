@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameplayController : MonoBehaviour
 {
     public static GameplayController instance;
+
+    //public GameObject ropeFixPoint;
 
     public BlockSpawner blockSpawner;
 
@@ -14,8 +17,12 @@ public class GameplayController : MonoBehaviour
     public CameraFollow cameraScript;
     private int moveCount;
 
+    public int playerScore;
+    public Text scoreText;
+
     void Awake()
     {
+        playerScore = 0;
         instance = this;
     }
 
@@ -26,6 +33,7 @@ public class GameplayController : MonoBehaviour
 
     void Update()
     {
+        //scoretext.text = playerscore.tostring();
         ParseInput();
     }
 
@@ -53,7 +61,7 @@ public class GameplayController : MonoBehaviour
         if (moveCount == 3)
         {
             moveCount = 0;
-            //cameraScript.targetPos.y += 2.0f;
+            cameraScript.targetPos.y += 4.431f;
         }
     }
 

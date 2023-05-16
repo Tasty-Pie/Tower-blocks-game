@@ -5,10 +5,7 @@ using UnityEngine;
 
 public class BlockScript : MonoBehaviour
 {
-    private const float maxDisplacement = 2.2f;
-    private const float oscillationVelocity = 5.0f;
-    private bool directedToTheRight = true;
-
+    private AnchoredJoint2D myJoint;
     private bool dropped;
 
     private Rigidbody2D myBody;
@@ -20,45 +17,27 @@ public class BlockScript : MonoBehaviour
     void Start()
     {
         dropped = false;
-        directedToTheRight = (UnityEngine.Random.Range(0, 2) == 0);
         GameplayController.instance.currentBlock = this;
     }
 
     void Update()
     {
-        MoveBox();
     }
 
     void Awake()
     {
         myBody = GetComponent<Rigidbody2D>();
-        myBody.gravityScale = 0.0f;
-    }
-
-    void MoveBox()
-    {
-        if (!dropped)
-        {
-            Vector3 newPosition = transform.position;
-            newPosition.x += (directedToTheRight ? 1 : -1) * oscillationVelocity * Time.deltaTime;
-            if (newPosition.x > maxDisplacement)
-            {
-                directedToTheRight = !directedToTheRight;
-                newPosition.x = maxDisplacement;
-            }
-            else if (newPosition.x < -maxDisplacement)
-            {
-                directedToTheRight = !directedToTheRight;
-                newPosition.x = -maxDisplacement;
-            }
-            transform.position = newPosition;
-        }
+        myJoint = GetComponent<AnchoredJoint2D>();
+        myBody.AddForce(transform.right * 100.0f);
     }
 
     public void DropBlock()
     {
-        dropped = true;
-        myBody.gravityScale = UnityEngine.Random.Range(2, 4);
+        if (myJoint != null)
+        {
+            myJoint.breakForce = 0;
+            myJoint = null;
+        }
     }
 
     void Landed()
