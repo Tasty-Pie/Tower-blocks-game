@@ -8,10 +8,6 @@ public class BlockSpawner : MonoBehaviour
 
     void Start()
     {
-        for (int i = 0; i < 1; i++)
-        {
-            SpawnBlock();
-        }
     }
 
     void Update()
