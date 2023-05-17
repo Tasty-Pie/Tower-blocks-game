@@ -26,6 +26,8 @@ public class GameplayController : MonoBehaviour
 
     public List<GameObject> landedBlocks;
 
+    public Transform point;
+
     void Awake()
     {
         instance = this;
@@ -55,7 +57,7 @@ public class GameplayController : MonoBehaviour
         if (attempts < 1)
         {
             Destroy(hearts[0].gameObject);
-            RestartGame();
+            Invoke("RestartGame", 1.0f);
         }
         else if (attempts < 2)
         {
@@ -69,7 +71,7 @@ public class GameplayController : MonoBehaviour
 
     void ParseInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!PauseMenu.isPaused && Input.GetMouseButtonDown(0))
         {
             currentBlock.DropBlock();
         }

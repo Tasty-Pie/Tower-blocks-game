@@ -6,7 +6,6 @@ using UnityEngine;
 public class BlockScript : MonoBehaviour
 {
     private AnchoredJoint2D myJoint;
-    //private bool dropped;
 
     private Rigidbody2D myBody;
 
@@ -14,9 +13,15 @@ public class BlockScript : MonoBehaviour
     private bool ignoreCollision = false;
     private bool ignoreTrigger = false;
 
+    [SerializeField] private AudioSource blockCollisionSound;
+    [SerializeField] private AudioSource blockDropSound;
+    [SerializeField] public AudioSource triggerSound;
+
+    public GameObject lineRendererPrefab;
+    public LineController myLr;
+
     void Start()
     {
-        //dropped = false;
         GameplayController.instance.currentBlock = this;
     }
 
@@ -26,18 +31,25 @@ public class BlockScript : MonoBehaviour
 
     void Awake()
     {
+        GameObject lineObj = Instantiate(lineRendererPrefab);
+        myLr = lineObj.GetComponent<LineController>();
+        Transform[] thePoints = { this.transform, GameplayController.instance.point.transform };
+        myLr.SetUpLine(thePoints);
+
         myBody = GetComponent<Rigidbody2D>();
         myBody.mass = 1.0f;
         myJoint = GetComponent<AnchoredJoint2D>();
-        myBody.AddForce(transform.right * 150.0f);
+        myBody.AddForce(transform.right * 150.0f * (UnityEngine.Random.Range(0, 2) == 0 ? -1.0f : 1.0f));
     }
 
     public void DropBlock()
     {
         if (myJoint != null)
         {
+            blockDropSound.Play();
             myJoint.breakForce = 0;
             myJoint = null;
+            Destroy(myLr.gameObject);
         }
     }
 
@@ -65,6 +77,7 @@ public class BlockScript : MonoBehaviour
         }
         if (collidedObject.gameObject.tag == "Platform" || collidedObject.gameObject.tag == "Block")
         {
+            blockCollisionSound.Play();
             var oldVelocity = myBody.velocity;
             myBody.velocity = new Vector2(oldVelocity[0] / 2.0f, oldVelocity[1]);
             Invoke("Landed", 3.0f);
@@ -81,6 +94,7 @@ public class BlockScript : MonoBehaviour
         if (triggeredObject.gameObject.tag == "GameOver")
         {
             ignoreTrigger = true;
+            triggerSound.Play();
             if (GameplayController.instance.attempts == 0)
             {
                 CancelInvoke("Landed");

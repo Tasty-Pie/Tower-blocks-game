@@ -6,6 +6,13 @@ using UnityEngine.Audio;
 
 public class MainMenuScript : MonoBehaviour
 {
+    [SerializeField] public AudioSource clickSound;
+
+    public void ClickSound()
+    {
+        clickSound.Play();
+    }
+
     public void PlayGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
@@ -16,7 +23,14 @@ public class MainMenuScript : MonoBehaviour
     public void SetVolume(float volumeLevel)
     {
         //UnityEngine.Debug.Log(VolumeLevel);
-        audioMixer.SetFloat("mixerVolumeLevel", volumeLevel);
+        if (volumeLevel <= -9.9)
+        {
+            audioMixer.SetFloat("mixerVolumeLevel", -80);
+        }
+        else
+        {
+            audioMixer.SetFloat("mixerVolumeLevel", volumeLevel);
+        }
     }
 
     public void QuitGame()
