@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +8,10 @@ public class GameplayController : MonoBehaviour
 {
     public static GameplayController instance;
 
-    //public GameObject ropeFixPoint;
+    public const float blockHeight = 1.1073f;
+
+    public int attempts = 3;
+    public GameObject[] hearts;
 
     public BlockSpawner blockSpawner;
 
@@ -15,15 +19,18 @@ public class GameplayController : MonoBehaviour
     public BlockScript currentBlock;
 
     public CameraFollow cameraScript;
-    private int moveCount;
 
-    public int playerScore;
+    public int playerScore = 0;
+    public int highestScore = 0;
     public Text scoreText;
+
+    public List<GameObject> landedBlocks;
 
     void Awake()
     {
-        playerScore = 0;
         instance = this;
+        playerScore = 0;
+        attempts = 3;
     }
 
     void Start()
@@ -33,8 +40,31 @@ public class GameplayController : MonoBehaviour
 
     void Update()
     {
-        //scoretext.text = playerscore.tostring();
         ParseInput();
+
+        float highestBlockY = highestBlock() + blockHeight / 2 + 3.84f;
+        playerScore = (int)Math.Round(highestBlockY / blockHeight);
+        if (playerScore > highestScore)
+        {
+            highestScore = playerScore;
+        }
+
+        MoveCamera(Math.Max(0.0f, highestBlockY - 2.0f));
+
+        scoreText.text = playerScore.ToString();
+        if (attempts < 1)
+        {
+            Destroy(hearts[0].gameObject);
+            RestartGame();
+        }
+        else if (attempts < 2)
+        {
+            Destroy(hearts[1].gameObject);
+        }
+        else if (attempts < 3)
+        {
+            Destroy(hearts[2].gameObject);
+        }
     }
 
     void ParseInput()
@@ -47,7 +77,7 @@ public class GameplayController : MonoBehaviour
 
     public void SpawnNewBlock()
     {
-        Invoke("NewBlock", 1.0f);
+        Invoke("NewBlock", 3.0f);
     }
 
     private void NewBlock()
@@ -55,14 +85,9 @@ public class GameplayController : MonoBehaviour
         blockSpawner.SpawnBlock();
     }
 
-    public void MoveCamera()
+    public void MoveCamera(float ycoord)
     {
-        moveCount++;
-        if (moveCount == 3)
-        {
-            moveCount = 0;
-            cameraScript.targetPos.y += 4.431f;
-        }
+        cameraScript.targetPos.y = ycoord;
     }
 
     public void RestartGame()
@@ -70,5 +95,30 @@ public class GameplayController : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
             );
+    }
+
+    public void loseAttempt()
+    {
+        attempts--;
+    }
+
+    public float highestBlock()
+    {
+        float highest = -3.84f;
+        foreach (var block in landedBlocks)
+        {
+            try
+            {
+                if (block.transform.position.y > highest)
+                {
+                    highest = block.transform.position.y;
+                }
+            }
+            catch (Exception _)
+            {
+                ;
+            }
+        }
+        return highest;
     }
 } // CLASS END

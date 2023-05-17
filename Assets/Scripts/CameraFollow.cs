@@ -8,7 +8,8 @@ public class CameraFollow : MonoBehaviour
     [HideInInspector]
     public Vector3 targetPos;
 
-    private float smoothMove = 1.0f;
+    private float smoothMove = 5.0f;
+
     void Start()
     {
         targetPos = transform.position;

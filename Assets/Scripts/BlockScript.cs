@@ -6,17 +6,17 @@ using UnityEngine;
 public class BlockScript : MonoBehaviour
 {
     private AnchoredJoint2D myJoint;
-    private bool dropped;
+    //private bool dropped;
 
     private Rigidbody2D myBody;
 
-    private bool gameOver;
-    private bool ignoreCollision;
-    private bool ignoreTrigger;
+    public static bool gameOver = false;
+    private bool ignoreCollision = false;
+    private bool ignoreTrigger = false;
 
     void Start()
     {
-        dropped = false;
+        //dropped = false;
         GameplayController.instance.currentBlock = this;
     }
 
@@ -27,8 +27,9 @@ public class BlockScript : MonoBehaviour
     void Awake()
     {
         myBody = GetComponent<Rigidbody2D>();
+        myBody.mass = 1.0f;
         myJoint = GetComponent<AnchoredJoint2D>();
-        myBody.AddForce(transform.right * 100.0f);
+        myBody.AddForce(transform.right * 150.0f);
     }
 
     public void DropBlock()
@@ -50,13 +51,10 @@ public class BlockScript : MonoBehaviour
         ignoreCollision = true;
         ignoreTrigger = true;
 
+        myBody.mass = 20.0f;
+        GameplayController.instance.landedBlocks.Add(this.gameObject);
+        GameplayController.instance.playerScore++;
         GameplayController.instance.SpawnNewBlock();
-        GameplayController.instance.MoveCamera();
-    }
-
-    void RestartGame()
-    {
-        GameplayController.instance.RestartGame();
     }
 
     void OnCollisionEnter2D(Collision2D collidedObject)
@@ -67,7 +65,9 @@ public class BlockScript : MonoBehaviour
         }
         if (collidedObject.gameObject.tag == "Platform" || collidedObject.gameObject.tag == "Block")
         {
-            Invoke("Landed", 1.0f);
+            var oldVelocity = myBody.velocity;
+            myBody.velocity = new Vector2(oldVelocity[0] / 2.0f, oldVelocity[1]);
+            Invoke("Landed", 3.0f);
             ignoreCollision = true;
         }
     }
@@ -80,10 +80,23 @@ public class BlockScript : MonoBehaviour
         }
         if (triggeredObject.gameObject.tag == "GameOver")
         {
-            CancelInvoke("Landed");
-            gameOver = true;
             ignoreTrigger = true;
-            Invoke("RestartGame", 1.0f);
+            if (GameplayController.instance.attempts == 0)
+            {
+                CancelInvoke("Landed");
+                gameOver = true;
+            }
+            else
+            {
+                GameplayController.instance.loseAttempt();
+                CancelInvoke("Landed");
+                Landed();
+                GameplayController.instance.playerScore -= 2;
+            }
+        }
+        else if (triggeredObject.gameObject.tag == "OutOfBounds")
+        {
+            Destroy(this.gameObject);
         }
     }
 } // CLASS END

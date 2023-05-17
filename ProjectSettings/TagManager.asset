@@ -8,6 +8,7 @@ TagManager:
   - GameOver
   - Block
   - Box
+  - OutOfBounds
   layers:
   - Default
   - TransparentFX
